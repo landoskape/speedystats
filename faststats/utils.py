@@ -52,3 +52,19 @@ def _get_result_shape(data_shape, axis, keepdims):
 def _get_numpy_method(method):
     """simple way to get numpy version of stats method"""
     return getattr(np, method)
+
+
+def _quantile_is_valid(q):
+    """checks if q is a valid quantile"""
+    q = np.asanyarray(q)
+    if np.any(q < 0) or np.any(q > 1):
+        raise ValueError("Quantiles must be in the range [0, 1]")
+    return True
+
+
+def _percentile_is_valid(p):
+    """checks if p is a valid percentile"""
+    p = np.asanyarray(p)
+    if np.any(p < 0) or np.any(p > 100):
+        raise ValueError("Percentiles must be in the range [0, 100]")
+    return True
