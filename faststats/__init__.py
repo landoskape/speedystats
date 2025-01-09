@@ -16,8 +16,7 @@ from .faststats import (
     nanstd,
     nanvar,
     zscore,
-    median_zscore,
-    nanmedian_zscore,
+    nan_zscore,
 )
 
 __version__ = "0.0.0"
