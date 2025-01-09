@@ -6,6 +6,8 @@ from .utils import (
     _get_result_shape,
     _get_reduce_size,
     _get_numpy_method,
+    _quantile_is_valid,
+    _percentile_is_valid,
 )
 
 from ._numba import (
@@ -26,8 +28,7 @@ from ._numba import (
     numba_nanstd,
     numba_nanvar,
     numba_zscore,
-    numba_median_zscore,
-    numba_nanmedian_zscore,
+    numba_nan_zscore,
 )
 
 
@@ -50,19 +51,21 @@ _method_lookup = dict(
     nanstd=numba_nanstd,
     nanvar=numba_nanvar,
     zscore=numba_zscore,
-    median_zscore=numba_median_zscore,
-    nanmedian_zscore=numba_nanmedian_zscore,
+    nan_zscore=numba_nan_zscore,
 )
 
 # these methods require a "q" argument
 _requires_q = ["percentile", "nanpercentile", "quantile", "nanquantile"]
 
 # these methods don't have a final reduction (their output should be same size as input)
-_noreduction = ["zscore", "median_zscore", "nanmedian_zscore"]
+_noreduction = ["zscore", "nan_zscore"]
 
 
 def faststat(data, method, axis=-1, keepdims=False, q=None):
     """shapes data and deploys numba speed ups of standard numpy stat methods"""
+    if not isinstance(data, np.ndarray):
+        raise TypeError("Input data must be a numpy array")
+
     if axis is None:
         # no reason to parallelize when reducing across all elements
         _func = _get_numpy_method(method)
@@ -123,18 +126,22 @@ def ptp(data, axis=None, keepdims=False):
 
 
 def percentile(data, q, axis=None, keepdims=False):
+    _percentile_is_valid(q)
     return faststat(data, "percentile", axis=axis, keepdims=keepdims, q=q)
 
 
 def nanpercentile(data, q, axis=None, keepdims=False):
+    _percentile_is_valid(q)
     return faststat(data, "nanpercentile", axis=axis, keepdims=keepdims, q=q)
 
 
 def quantile(data, q, axis=None, keepdims=False):
+    _quantile_is_valid(q)
     return faststat(data, "quantile", axis=axis, keepdims=keepdims, q=q)
 
 
 def nanquantile(data, q, axis=None, keepdims=False):
+    _quantile_is_valid(q)
     return faststat(data, "nanquantile", axis=axis, keepdims=keepdims, q=q)
 
 
@@ -178,9 +185,5 @@ def zscore(data, axis=None, keepdims=False):
     return faststat(data, "zscore", axis=axis, keepdims=keepdims)
 
 
-def median_zscore(data, axis=None, keepdims=False):
-    return faststat(data, "median_zscore", axis=axis, keepdims=keepdims)
-
-
-def nanmedian_zscore(data, axis=None, keepdims=False):
-    return faststat(data, "nanmedian_zscore", axis=axis, keepdims=keepdims)
+def nan_zscore(data, axis=None, keepdims=False):
+    return faststat(data, "nan_zscore", axis=axis, keepdims=keepdims)
