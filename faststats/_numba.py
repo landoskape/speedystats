@@ -2,7 +2,7 @@ import numpy as np
 import numba as nb
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=True, cache=True)
 def numba_sum(data):
     """numba speed up for sum"""
     output = np.zeros(data.shape[0])
@@ -11,7 +11,7 @@ def numba_sum(data):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nansum(data):
     """numba speed up for nansum"""
     output = np.zeros(data.shape[0])
@@ -20,7 +20,7 @@ def numba_nansum(data):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=True, cache=True)
 def numba_ptp(data):
     """numba speed up for ptp"""
     output = np.zeros(data.shape[0])
@@ -29,7 +29,7 @@ def numba_ptp(data):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=True, cache=True)
 def numba_percentile(data, q):
     """numba speed up for percentile"""
     output = np.zeros(data.shape[0])
@@ -38,7 +38,7 @@ def numba_percentile(data, q):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile(data, q):
     """numba speed up for nanpercentile"""
     output = np.zeros(data.shape[0])
@@ -47,7 +47,7 @@ def numba_nanpercentile(data, q):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=True, cache=True)
 def numba_quantile(data, q):
     """numba speed up for quantile"""
     output = np.zeros(data.shape[0])
@@ -56,7 +56,7 @@ def numba_quantile(data, q):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanquantile(data, q):
     """numba speed up for nanquantile"""
     output = np.zeros(data.shape[0])
@@ -65,7 +65,7 @@ def numba_nanquantile(data, q):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=True, cache=True)
 def numba_median(data):
     """numba speed up for median"""
     output = np.zeros(data.shape[0])
@@ -74,7 +74,7 @@ def numba_median(data):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=True, cache=True)
 def numba_average(data):
     """numba speed up for average"""
     output = np.zeros(data.shape[0])
@@ -83,7 +83,7 @@ def numba_average(data):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=True, cache=True)
 def numba_mean(data):
     """numba speed up for mean"""
     output = np.zeros(data.shape[0])
@@ -92,7 +92,7 @@ def numba_mean(data):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=True, cache=True)
 def numba_std(data):
     """numba speed up for nanstd"""
     output = np.zeros(data.shape[0])
@@ -101,7 +101,7 @@ def numba_std(data):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=True, cache=True)
 def numba_var(data):
     """numba speed up for nanvar"""
     output = np.zeros(data.shape[0])
@@ -110,7 +110,7 @@ def numba_var(data):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanmedian(data):
     """numba speed up for nanmedian"""
     output = np.zeros(data.shape[0])
@@ -119,7 +119,7 @@ def numba_nanmedian(data):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanmean(data):
     """numba speed up for nanmean"""
     output = np.zeros(data.shape[0])
@@ -128,7 +128,7 @@ def numba_nanmean(data):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanstd(data):
     """numba speed up for nanstd"""
     output = np.zeros(data.shape[0])
@@ -137,7 +137,7 @@ def numba_nanstd(data):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanvar(data):
     """numba speed up for nanvar"""
     output = np.zeros(data.shape[0])
@@ -146,28 +146,19 @@ def numba_nanvar(data):
     return output
 
 
-@nb.njit(parallel=True)
+@nb.njit(parallel=True, fastmath=True, cache=True)
 def numba_zscore(data):
     """numba speed up for zscore"""
-    output = np.zeros_like(data)
+    output = np.zeros(data.shape)
     for n in nb.prange(data.shape[0]):
         output[n] = (data[n] - np.mean(data[n])) / np.std(data[n])
     return output
 
 
-@nb.njit(parallel=True)
-def numba_median_zscore(data):
+@nb.njit(parallel=True, fastmath=False, cache=True)
+def numba_nan_zscore(data):
     """numba speed up for median zscore"""
-    output = np.zeros_like(data)
+    output = np.zeros(data.shape)
     for n in nb.prange(data.shape[0]):
-        output[n] = (data[n] - np.median(data[n])) / np.std(data[n])
-    return output
-
-
-@nb.njit(parallel=True)
-def numba_nanmedian_zscore(data):
-    """numba speed up for nanmedian zscore"""
-    output = np.zeros_like(data)
-    for n in nb.prange(data.shape[0]):
-        output[n] = (data[n] - np.nanmedian(data[n])) / np.nanstd(data[n])
+        output[n] = (data[n] - np.nanmean(data[n])) / np.nanstd(data[n])
     return output
