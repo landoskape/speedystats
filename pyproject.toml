@@ -31,6 +31,9 @@ test = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
 ]
+benchmark = [
+    "tabulate",
+]
 
 [project.urls]
 Homepage = "https://github.com/landoskape/faststats"
