@@ -2,12 +2,11 @@ import numpy as np
 
 from .utils import (
     _check_axis,
-    _get_target_axis,
     _get_result_shape,
-    _get_reduce_size,
     _get_numpy_method,
     _quantile_is_valid,
     _percentile_is_valid,
+    _numpy_fallback,
 )
 
 from ._numba import (
@@ -66,13 +65,12 @@ def faststat(data, method, axis=-1, keepdims=False, q=None):
     if not isinstance(data, np.ndarray):
         raise TypeError("Input data must be a numpy array")
 
-    if axis is None:
-        # no reason to parallelize when reducing across all elements
+    if not _check_axis(axis, data.ndim):
+        raise ValueError("requested axis is not valid, must be in range [-ndim, ndim) and not contain duplicates")
+
+    if _numpy_fallback(axis, data.ndim):
         _func = _get_numpy_method(method)
         return _func(data, q) if method in _requires_q else _func(data)
-
-    # check if axis is valid
-    assert _check_axis(axis, data.ndim), "requested axis is not valid"
 
     # get numba method
     if method in _method_lookup:
@@ -89,10 +87,16 @@ def faststat(data, method, axis=-1, keepdims=False, q=None):
 
     # measure output and reduction shapes
     data_shape = data.shape
-    num_reduce = _get_reduce_size(data_shape, axis)
+    if hasattr(axis, "__iter__"):
+        num_reduce = np.prod([data_shape[i] for i in axis])
+    else:
+        num_reduce = data_shape[axis]
 
     # move reduction axis(s) to last dims in array
-    target = _get_target_axis(axis)
+    if hasattr(axis, "__iter__"):
+        target = np.arange(-len(axis), 0)
+    else:
+        target = -1
     data = np.moveaxis(data, axis, target)
 
     # reshape to (num_output_elements, num_elements_to_reduce)
