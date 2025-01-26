@@ -26,6 +26,9 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 
+[tool.hatch.build.hooks.custom]
+path = "tools/hooks.py"
+
 [project.optional-dependencies]
 test = [
     "pytest>=7.0.0",
@@ -34,12 +37,21 @@ test = [
 benchmark = [
     "tabulate",
 ]
+dev = [
+    "black",
+    "tools/generators",
+]
+# TODO: Fix this. I want the install hook to be included, but not the generator code. 
+# I only want generator code to be included when the user requests a [dev] install.
+# Don't think the above is correct....
 
 [project.urls]
 Homepage = "https://github.com/landoskape/faststats"
 
+# TODO: Fix this. I want the install hook to be included, but not the generator code. 
+# I only want generator code to be included when the user requests a [dev] install.
 [tool.hatch.build]
-include = ["faststats"]
+include = ["faststats", "tools/build/hooks.py"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

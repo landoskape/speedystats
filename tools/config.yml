@@ -1,0 +1,80 @@
+# Configuration for Numba function generation
+# Each method describes properties needed for code generation
+
+meta:
+  output_path: "faststats2/numba"
+  max_dimensions: 5 # Maximum number of dimensions to support with numba implementations
+  parallel: true # whether to use the parallel=True flag in numba compilation
+  cache: true # whether to cache the numba compilation
+
+methods:
+  sum:
+    numpy_name: sum
+    fastmath: true
+    has_nan_variant: true
+    has_q_param: false
+    description: "Sum of array elements"
+
+  ptp:
+    numpy_name: ptp
+    fastmath: true
+    has_nan_variant: false
+    has_q_param: false
+    description: "Range of values (maximum - minimum) along an axis"
+
+  percentile:
+    numpy_name: percentile
+    fastmath: true
+    has_nan_variant: true
+    has_q_param: true
+    description: "Compute the q-th percentile of the data along the specified axis"
+
+  quantile:
+    numpy_name: quantile
+    fastmath: true
+    has_nan_variant: true
+    has_q_param: true
+    description: "Compute the q-th quantile of the data along the specified axis"
+
+  median:
+    numpy_name: median
+    fastmath: true
+    has_nan_variant: true
+    has_q_param: false
+    description: "Compute the median along the specified axis"
+
+  average:
+    numpy_name: average
+    fastmath: true
+    has_nan_variant: false
+    has_q_param: false
+    description: "Compute the average along the specified axis"
+
+  mean:
+    numpy_name: mean
+    fastmath: true
+    has_nan_variant: true
+    has_q_param: false
+    description: "Compute the arithmetic mean along the specified axis"
+
+  std:
+    numpy_name: std
+    fastmath: true
+    has_nan_variant: true
+    has_q_param: false
+    description: "Compute the standard deviation along the specified axis"
+
+  var:
+    numpy_name: var
+    fastmath: true
+    has_nan_variant: true
+    has_q_param: false
+    description: "Compute the variance along the specified axis"
+
+  zscore:
+    numpy_name: zscore
+    fastmath: true
+    has_nan_variant: true
+    has_q_param: false
+    description: "Calculate the z score of each value in the sample"
+    custom_implementation: true  # Requires special handling as it's not a direct numpy method
