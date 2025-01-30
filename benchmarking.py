@@ -1,6 +1,6 @@
 import numpy as np
 import time
-from typing import Tuple, List, Optional, Union, Callable
+from typing import Tuple, List, Optional, Union
 import faststats
 from dataclasses import dataclass
 from tabulate import tabulate
@@ -26,18 +26,20 @@ class BenchmarkResult:
 def get_array_configs() -> List[ArrayConfig]:
     """Define different array configurations to test"""
     return [
-        # Small arrays
-        ArrayConfig((100, 100), "small_square"),
-        ArrayConfig((10, 1000), "small_lopsided_right"),
-        ArrayConfig((1000, 10), "small_lopsided_left"),
         # Large arrays
         ArrayConfig((1000, 1000), "large_square"),
-        ArrayConfig((1000, 10000), "large_lopsided_right"),
-        ArrayConfig((10000, 1000), "large_lopsided_left"),
-        ArrayConfig((10, 100000), "large_extra_lopsided_right"),
-        ArrayConfig((100000, 10), "large_extra_lopsided_left"),
-        # # Multi-dimensional arrays
-        # ArrayConfig((1000, 1000, 1000), "3d_cubic"),
+        ArrayConfig((1000, 10000), "large_tilted_right"),
+        ArrayConfig((10000, 1000), "large_tilted_left"),
+        ArrayConfig((10, 100000), "extra_tilted_right"),
+        ArrayConfig((100000, 10), "extra_tilted_left"),
+        # Extra large arrays
+        ArrayConfig((8000, 8000), "huge_square"),
+        # Triple arrays
+        ArrayConfig((100, 100, 100), "3d_small"),
+        ArrayConfig((100, 100, 1000), "3d_small_tilted_right"),
+        ArrayConfig((100, 1000, 100), "3d_small_tilted_left"),
+        ArrayConfig((100, 1000, 1000), "3d_large_tilted_right"),
+        ArrayConfig((1000, 1000, 100), "3d_large_tilted_left"),
     ]
 
 
@@ -51,6 +53,7 @@ def benchmark_operation(
 
     # Get the corresponding functions
     numpy_func = getattr(np, method)
+
     faststats_func = getattr(faststats, method)
 
     # Warm-up run
@@ -75,18 +78,14 @@ def benchmark_operation(
 
 
 def run_benchmarks(
-    method: str,
-    configs: List[ArrayConfig] = None,
-    axes_to_test: List[Union[int, Tuple[int, ...], None]] = None,
+    method: str, configs: List[ArrayConfig] = None
 ) -> List[BenchmarkResult]:
     """Run comprehensive benchmarks for a given statistical method"""
 
     if configs is None:
         configs = get_array_configs()
 
-    if axes_to_test is None:
-        # Default axes to test for each array
-        axes_to_test = [None, 0, 1, (0, 1)]
+    axes_to_test = [0, 1, 2, (0, 1), (0, 2), (1, 2)]
 
     results = []
 
@@ -100,13 +99,25 @@ def run_benchmarks(
         # Test different axis configurations
         for axis in axes_to_test:
             # Skip invalid axis combinations
+            if axis is None:
+                continue
             if isinstance(axis, (int, tuple)) and axis is not None:
                 if isinstance(axis, int) and axis >= len(config.shape):
                     continue
-                if isinstance(axis, tuple) and any(a >= len(config.shape) for a in axis):
+                if isinstance(axis, tuple) and any(
+                    a >= len(config.shape) for a in axis
+                ):
                     continue
+                if isinstance(axis, tuple) and len(axis) > len(config.shape):
+                    continue
+            else:
+                continue
 
-            numpy_time, faststats_time = benchmark_operation(data, method, axis)
+            numpy_time, faststats_time = benchmark_operation(
+                data,
+                method,
+                axis,
+            )
 
             results.append(
                 BenchmarkResult(
@@ -125,11 +136,25 @@ def run_benchmarks(
 def display_results(results: List[BenchmarkResult]):
     """Display benchmark results in a formatted table"""
     table_data = [
-        [r.array_name, str(r.axis), f"{r.array_size_mb:.1f}", f"{r.numpy_time*1000:.2f}", f"{r.faststats_time*1000:.2f}", f"{r.speedup:.2f}x"]
+        [
+            r.array_name,
+            str(r.axis),
+            f"{r.array_size_mb:.1f}",
+            f"{r.numpy_time*1000:.2f}",
+            f"{r.faststats_time*1000:.2f}",
+            f"{r.speedup:.2f}x",
+        ]
         for r in results
     ]
 
-    headers = ["Array", "Axis", "Size (MB)", "NumPy (ms)", "FastStats (ms)", "Speedup"]
+    headers = [
+        "Array",
+        "Axis",
+        "Size (MB)",
+        "NumPy (ms)",
+        "FastStats (ms)",
+        "Speedup-FS",
+    ]
     print(tabulate(table_data, headers=headers, tablefmt="grid"))
 
 

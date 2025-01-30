@@ -39,7 +39,7 @@ benchmark = [
 ]
 dev = [
     "black",
-    "tools/generators",
+    "tools/",
     "pyyaml",
 ]
 # TODO: Fix this. I want the install hook to be included, but not the generator code. 
