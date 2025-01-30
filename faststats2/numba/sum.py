@@ -1,10 +1,9 @@
+from typing import Tuple
 import numba as nb
 import numpy as np
 
-from ..routing import get_keep_axes
 
-def get_sum(data, axis):
-    keep_axes = get_keep_axes(axis, data.ndim)
+def get_sum(data: np.ndarray, keep_axes: Tuple[int]) -> np.ndarray:
     if keep_axes == (0,):
         return numba_sum_keep0(data)
     if keep_axes == (1,):

@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Union, Iterable, Tuple
 from . import numba
 
 
@@ -29,10 +29,30 @@ def faststats_route(np_method: str) -> Callable:
         "var": numba.var.get_var,
         "nanvar": numba.nanvar.get_nanvar,
     }
+    has_q_param = {
+        "sum": False,
+        "nansum": False,
+        "ptp": False,
+        "percentile": True,
+        "nanpercentile": True,
+        "quantile": True,
+        "nanquantile": True,
+        "median": False,
+        "nanmedian": False,
+        "average": False,
+        "mean": False,
+        "nanmean": False,
+        "std": False,
+        "nanstd": False,
+        "var": False,
+        "nanvar": False,
+    }
 
     if np_method not in method_map:
         raise ValueError(f"No fast implementation available for {np_method}")
-    return method_map[np_method]
+    if np_method not in has_q_param:
+        raise ValueError(f"No q param config available for {np_method}")
+    return method_map[np_method], has_q_param[np_method]
 
 
 def get_max_dims() -> int:
@@ -44,10 +64,10 @@ def get_max_dims() -> int:
     return 5
 
 
-def get_keep_axes(axis, ndim):
+def get_keep_axes(axis: Union[int, Iterable[int]], ndim: int) -> Tuple[int]:
     keep_axes = list(range(ndim))
-    if not isinstance(axis, (tuple, list)):
-        axis = (axis,)
+    if isinstance(axis, int):
+        axis = [axis]
     for a in axis:
         keep_axes.remove(a)
 

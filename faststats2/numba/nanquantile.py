@@ -1,10 +1,9 @@
+from typing import Tuple
 import numba as nb
 import numpy as np
 
-from ..routing import get_keep_axes
 
-def get_nanquantile(data, axis, q):
-    keep_axes = get_keep_axes(axis, data.ndim)
+def get_nanquantile(data: np.ndarray, keep_axes: Tuple[int], q) -> np.ndarray:
     if keep_axes == (0,):
         return numba_nanquantile_keep0(data, q)
     if keep_axes == (1,):
