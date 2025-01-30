@@ -1,6 +1,13 @@
 import numpy as np
 import pytest
-from faststats.utils import _check_iterable, _validate_axis, _check_axis, _get_target_axis, _quantile_is_valid, _percentile_is_valid
+from faststats.utils import (
+    _check_iterable,
+    _validate_axis,
+    _check_axis,
+    _get_target_axis,
+    _quantile_is_valid,
+    _percentile_is_valid,
+)
 
 
 def test_check_iterable():
