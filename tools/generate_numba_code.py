@@ -26,8 +26,84 @@ with any number of dimensions (as long as it's at least as many as are kept!).
 """
 
 import os
+from pathlib import Path
+from typing import Callable, Any
+import functools
 from itertools import combinations
 import yaml
+import tomli
+import black
+
+
+def get_black_config() -> black.Mode:
+    """
+    Get Black configuration from pyproject.toml if available.
+    Falls back to default configuration if not found.
+    """
+    try:
+        # Look for pyproject.toml in parent directory
+        config_path = Path(__file__).parent.parent / "pyproject.toml"
+
+        if config_path.exists():
+            with open(config_path, "rb") as f:
+                config = tomli.load(f)
+
+            # Extract Black configuration if it exists
+            black_config = config.get("tool", {}).get("black", {})
+
+            # Convert configuration to Black's Mode
+            return black.Mode(
+                target_versions={
+                    black.TargetVersion[f"{ver.upper().replace('.', '')}"]
+                    for ver in black_config.get("target-version", ["py37"])
+                },
+                line_length=black_config.get("line-length", 88),
+                string_normalization=black_config.get("string-normalization", True),
+                is_pyi=black_config.get("is-pyi", False),
+            )
+    except Exception as e:
+        print(f"Warning: Failed to load Black config from pyproject.toml: {e}")
+        print("Using default Black configuration")
+
+    # Default configuration if pyproject.toml is not found or invalid
+    return black.Mode(
+        target_versions={black.TargetVersion.PY37},
+        line_length=88,
+        string_normalization=True,
+        is_pyi=False,
+    )
+
+
+def format_with_black(func: Callable[..., str]) -> Callable[..., str]:
+    """
+    A decorator that formats the string output of a function using Black.
+    Configuration is read from pyproject.toml in the parent directory.
+
+    Args:
+        func: A function that returns a string of Python code
+
+    Returns:
+        A wrapped function that returns Black-formatted Python code
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> str:
+        # Get the unformatted code
+        code = func(*args, **kwargs)
+
+        try:
+            # Get Black configuration from pyproject.toml
+            mode = get_black_config()
+
+            # Format the code
+            formatted_code = black.format_str(code, mode=mode)
+            return formatted_code
+
+        except Exception as e:
+            print(f"Warning: Black formatting failed: {e}")
+            return code  # Return original code if formatting fails
+
+    return wrapper
 
 
 def get_func_name(np_method, keep_axes):
@@ -117,7 +193,7 @@ def generate_numba_lookup(np_method, max_dims, has_q_param):
         template += f"    if keep_axes == {keep_axes}:\n"
         template += f"        return {func_name}(data{q_param})\n"
 
-    template += f"    raise ValueError(f'Invalid data shape for {np_method}')\n"
+    template += f"    raise ValueError(f'Invalid data shape for {np_method}, received: {{keep_axes}}')\n"
 
     return template
 
@@ -141,12 +217,13 @@ def get_all_combinations(max_dims):
         return keep_axes
 
     axis_combinations = []
-    for dim in range(2, max_dims + 1):
-        for axes in combinations(range(dim), dim - 1):
+    for num_axes in range(1, max_dims):
+        for axes in combinations(range(max_dims), num_axes):
             axis_combinations.append(_make_tuple(axes))
     return axis_combinations
 
 
+@format_with_black
 def generate_module(np_method, max_dims, fastmath, parallel, cache, has_q_param):
     """
     Generate a module containing all possible numba functions up to max_dims.
@@ -183,6 +260,7 @@ import numpy as np\n\n"""
     return complete_code
 
 
+@format_with_black
 def generate_faststats_module(config):
     # Imports
     template = """
@@ -200,24 +278,26 @@ from .routing import faststats_route, get_max_dims, get_keep_axes
 def _call_faststats(
     data: np.ndarray,
     method: str,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Optional[Union[int, Iterable[int]]] = None,
     keepdims: bool = False,
     q: Optional[float] = None,
 ) -> np.ndarray:
+    # If the axis is None, use the numpy fallback
+    if axis is None:
+        return _fallback_faststats(data, method, axis, keepdims, q)
 
     # Identify the shape of the data and the axes to keep
     data_ndims = data.ndim
     data_shape = data.shape
     keep_axes = get_keep_axes(axis, data_ndims)
 
-    # If the number of axes to keep is greater than the max supported, use the numpy method directly
+    # If no axes are kept, use the numpy fallback
+    if not keep_axes:
+        return _fallback_faststats(data, method, axis, keepdims, q)
+
+    # If the number of axes to keep isn't supported, use the numpy fallback
     if any(k >= MAX_DIMS for k in keep_axes):
-        np_method = getattr(np, method)
-        has_q_param = faststats_route(method)[1]
-        if has_q_param:
-            return np_method(data, axis, keepdims, q)
-        else:
-            return np_method(data, axis, keepdims)
+        return _fallback_faststats(data, method, axis, keepdims, q)
 
     # Reshape the data to be flattened along reducing axes
     last_axis = keep_axes[-1]
@@ -241,6 +321,17 @@ def _call_faststats(
     return out
 """
 
+    # Add a numpy fallback when the faststats implementation isn't available
+    # or won't be faster
+    template += f"""
+def _fallback_faststats(data: np.ndarray, method: str, axis: Optional[Union[int, Iterable[int]]] = None, keepdims: bool = False, q: Optional[float] = None) -> np.ndarray:
+    np_method = getattr(np, method)
+    if q is not None:
+        return np_method(data, axis=axis, keepdims=keepdims, q=q)
+    else:
+        return np_method(data, axis=axis, keepdims=keepdims)
+"""
+
     # Then, for every method in the config, add a function so the user can just call
     # that directly -- and it will use _call_faststats internally for dispatching
     for method_name in config["methods"]:
@@ -251,17 +342,20 @@ def _call_faststats(
             q_signature = ""
             q_call = ""
         template += f"""
-def {method_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = -1, keepdims: bool = False{q_signature}) -> np.ndarray:
+def {method_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = -1, keepdims: bool = False{q_signature},) -> np.ndarray:
     return _call_faststats(data, "{method_name}", axis, keepdims{q_call})
 """
         if config["methods"][method_name]["has_nan_variant"]:
             nan_name = f"nan{method_name}"
             template += f"""
-def {nan_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = -1, keepdims: bool = False{q_signature}) -> np.ndarray:
+def {nan_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = -1, keepdims: bool = False{q_signature},) -> np.ndarray:
     return _call_faststats(data, "{nan_name}", axis, keepdims{q_call})
 """
 
+    return template
 
+
+@format_with_black
 def generate_routing_module(config):
     """Generate the routing module that maps numpy methods to their numba implementations."""
     template = """from typing import Callable, Union, Iterable, Tuple
@@ -334,7 +428,8 @@ def get_keep_axes(axis: Union[int, Iterable[int]], ndim: int) -> Tuple[int]:
     return template
 
 
-def generate_init_file(config):
+@format_with_black
+def generate_numba_init_file(config):
     """Generate the __init__.py file that imports all get_* methods."""
     template = """\"\"\"Numba-accelerated statistical functions.\"\"\"
 
@@ -351,8 +446,25 @@ def generate_init_file(config):
     return template
 
 
+@format_with_black
+def generate_init_file(config):
+    """Generate the __init__.py file that imports all faststats methods."""
+    template = """\"\"\"Numba-accelerated statistical functions.\"\"\"
+
+"""
+    # Add imports for each method
+    for method_name in config["methods"]:
+        template += f"from .faststats import {method_name}\n"
+        if config["methods"][method_name]["has_nan_variant"]:
+            nan_name = f"nan{method_name}"
+            template += f"from .faststats import {nan_name}\n"
+
+    return template
+
+
 # Example usage:
 if __name__ == "__main__":
+
     # Load configuration
     with open("tools/config.yml", "r") as f:
         config = yaml.safe_load(f)
@@ -362,23 +474,37 @@ if __name__ == "__main__":
     parallel = config["meta"]["parallel"]
     cache = config["meta"]["cache"]
     numba_path = config["meta"]["output_path"] + "/numba"
+    numba_init_path = os.path.join(numba_path, "__init__.py")
     init_path = config["meta"]["output_path"] + "/__init__.py"
     route_path = config["meta"]["output_path"] + "/routing.py"
+    faststats_path = config["meta"]["output_path"] + "/faststats.py"
 
     # Ensure output directory exists
     os.makedirs(numba_path, exist_ok=True)
 
-    # Generate and write the __init__.py file
+    # Generate the __init__.py file for the faststats module
     init_code = generate_init_file(config)
-    with open(os.path.join(numba_path, "__init__.py"), "w") as f:
+    with open(init_path, "w") as f:
         f.write(init_code)
-    print(f"Generated {numba_path}/__init__.py")
+    print(f"Generated {init_path}")
+
+    # Generate and write the __init__.py file for the numba module
+    numba_init_code = generate_numba_init_file(config)
+    with open(numba_init_path, "w") as f:
+        f.write(numba_init_code)
+    print(f"Generated {numba_init_path}")
 
     # Generate and write the routing module
     routing_code = generate_routing_module(config)
     with open(route_path, "w") as f:
         f.write(routing_code)
     print(f"Generated {route_path}")
+
+    # Generate and write the faststats module
+    faststats_code = generate_faststats_module(config)
+    with open(faststats_path, "w") as f:
+        f.write(faststats_code)
+    print(f"Generated {faststats_path}")
 
     # Generate code for each method
     for method_name in config["methods"]:
