@@ -103,8 +103,7 @@ def {func_name}(data: np.ndarray{q_param}) -> np.ndarray:
 def lookup_template(np_method, has_q_param):
     q_param = ", q" if has_q_param else ""
     return f"""
-def get_{np_method}(data, axis{q_param}):
-    keep_axes = get_keep_axes(axis, data.ndim)
+def get_{np_method}(data: np.ndarray, keep_axes: Tuple[int]{q_param}) -> np.ndarray:
 """
 
 
@@ -174,23 +173,103 @@ def generate_module(np_method, max_dims, fastmath, parallel, cache, has_q_param)
             )
         )
 
-    complete_code = """import numba as nb
-import numpy as np
+    complete_code = """from typing import Tuple
+import numba as nb
+import numpy as np\n\n"""
 
-from ..routing import get_keep_axes
-"""
     complete_code += generate_numba_lookup(np_method, max_dims, has_q_param)
     complete_code += "\n".join(all_functions)
 
     return complete_code
 
 
+def generate_faststats_module(config):
+    # Imports
+    template = """
+from typing import Union, Iterable, Optional
+import numpy as np
+from .routing import faststats_route, get_max_dims, get_keep_axes
+"""
+
+    # This global variable is used to determine the maximum number of dimensions
+    # supported by the fast implementations
+    template += f"""MAX_DIMS = get_max_dims()\n\n"""
+
+    # Define the faststats call function
+    template += f"""
+def _call_faststats(
+    data: np.ndarray,
+    method: str,
+    axis: Union[int, Iterable[int]] = -1,
+    keepdims: bool = False,
+    q: Optional[float] = None,
+) -> np.ndarray:
+
+    # Identify the shape of the data and the axes to keep
+    data_ndims = data.ndim
+    data_shape = data.shape
+    keep_axes = get_keep_axes(axis, data_ndims)
+
+    # If the number of axes to keep is greater than the max supported, use the numpy method directly
+    if any(k >= MAX_DIMS for k in keep_axes):
+        np_method = getattr(np, method)
+        has_q_param = faststats_route(method)[1]
+        if has_q_param:
+            return np_method(data, axis, keepdims, q)
+        else:
+            return np_method(data, axis, keepdims)
+
+    # Reshape the data to be flattened along reducing axes
+    last_axis = keep_axes[-1]
+    if data_ndims > last_axis + 1:
+        new_shape = data_shape[: last_axis + 1] + (-1,)
+        data = np.reshape(data, new_shape)
+
+    # Get the numba implementation and check if it has a q parameter
+    func, has_q_param = faststats_route(method)
+
+    # Call the numba implementation
+    if has_q_param:
+        out = func(data, keep_axes, q)
+    else:
+        out = func(data, keep_axes)
+
+    # Reshape the output to match the original data shape if keepdims is True
+    if keepdims:
+        out = np.expand_dims(out, axis)
+
+    return out
+"""
+
+    # Then, for every method in the config, add a function so the user can just call
+    # that directly -- and it will use _call_faststats internally for dispatching
+    for method_name in config["methods"]:
+        if config["methods"][method_name]["has_q_param"]:
+            q_signature = ", q: Optional[float] = None"
+            q_call = ", q"
+        else:
+            q_signature = ""
+            q_call = ""
+        template += f"""
+def {method_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = -1, keepdims: bool = False{q_signature}) -> np.ndarray:
+    return _call_faststats(data, "{method_name}", axis, keepdims{q_call})
+"""
+        if config["methods"][method_name]["has_nan_variant"]:
+            nan_name = f"nan{method_name}"
+            template += f"""
+def {nan_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = -1, keepdims: bool = False{q_signature}) -> np.ndarray:
+    return _call_faststats(data, "{nan_name}", axis, keepdims{q_call})
+"""
+
+
 def generate_routing_module(config):
     """Generate the routing module that maps numpy methods to their numba implementations."""
-    template = """from typing import Callable
-from . import numba
+    template = """from typing import Callable, Union, Iterable, Tuple
+from . import numba\n\n
+"""
 
-def faststats_route(np_method: str) -> Callable:
+    # Add faststats_route function
+    template += """def faststats_route(np_method: str) -> Callable:
     \"\"\"Route numpy method names to their fast implementations.
     
     Args:
@@ -202,22 +281,34 @@ def faststats_route(np_method: str) -> Callable:
 """
     # Add routing logic for each method
     template += "    method_map = {\n"
-
     for method_name in config["methods"]:
         template += f'        "{method_name}": numba.{method_name}.get_{method_name},\n'
-
         # Add nan variant if it exists
         if config["methods"][method_name]["has_nan_variant"]:
             nan_name = f"nan{method_name}"
             template += f'        "{nan_name}": numba.{nan_name}.get_{nan_name},\n'
-
     template += "    }\n"
+
+    # Add has_q_param logic
+    template += "    has_q_param = {\n"
+    for method_name in config["methods"]:
+        template += f'        "{method_name}": {config["methods"][method_name]["has_q_param"]},\n'
+        # Add nan variant if it exists
+        if config["methods"][method_name]["has_nan_variant"]:
+            nan_name = f"nan{method_name}"
+            template += f'        "{nan_name}": {config["methods"][method_name]["has_q_param"]},\n'
+    template += "    }\n"
+
+    # Add raise and return logic
     template += """    
     if np_method not in method_map:
         raise ValueError(f"No fast implementation available for {np_method}")
-    return method_map[np_method]
+    if np_method not in has_q_param:
+        raise ValueError(f"No q param config available for {np_method}")
+    return method_map[np_method], has_q_param[np_method]
 """
 
+    # Add get_max_dims function
     template += f"""
 def get_max_dims() -> int:
     \"\"\"Get the maximum number of dimensions supported by the fast implementations.
@@ -228,9 +319,12 @@ def get_max_dims() -> int:
     return {config["meta"]["max_dimensions"]}
 """
 
+    # Add get_keep_axes function
     template += f"""
-def get_keep_axes(axis, ndim):
+def get_keep_axes(axis: Union[int, Iterable[int]], ndim: int) -> Tuple[int]:
     keep_axes = list(range(ndim))
+    if isinstance(axis, int):
+        axis = [axis]
     for a in axis:
         keep_axes.remove(a)
 
@@ -280,6 +374,12 @@ if __name__ == "__main__":
         f.write(init_code)
     print(f"Generated {numba_path}/__init__.py")
 
+    # Generate and write the routing module
+    routing_code = generate_routing_module(config)
+    with open(route_path, "w") as f:
+        f.write(routing_code)
+    print(f"Generated {route_path}")
+
     # Generate code for each method
     for method_name in config["methods"]:
         code = generate_module(
@@ -312,9 +412,3 @@ if __name__ == "__main__":
             with open(output_file, "w") as f:
                 f.write(code)
             print(f"Generated {output_file}")
-
-    # Generate and write the routing module
-    routing_code = generate_routing_module(config)
-    with open(route_path, "w") as f:
-        f.write(routing_code)
-    print(f"Generated {route_path}")

@@ -58,3 +58,6 @@ include = ["faststats", "tools/build/hooks.py"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "--cov=faststats --cov-report=xml --cov-report=term-missing"
+
+[tool.black]
+line-length = 88
