@@ -3,21 +3,46 @@ import pytest
 
 
 @pytest.fixture
-def sample_1d():
-    return np.array([1, 2, 3, 4, 5])
-
-
-@pytest.fixture
-def sample_2d():
-    return np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-
-
-@pytest.fixture
-def sample_with_nan():
-    return np.array([[1, 2, np.nan], [4, np.nan, 6], [7, 8, 9]])
-
-
-@pytest.fixture
-def large_random():
+def random_1d():
     np.random.seed(42)
-    return np.random.randn(100, 100)
+    return np.random.randn(10)
+
+
+@pytest.fixture
+def random_1d_with_nan():
+    np.random.seed(42)
+    data = np.random.randn(10)
+    data[np.random.randint(0, 10)] = np.nan
+    return data
+
+
+@pytest.fixture
+def random_2d():
+    np.random.seed(42)
+    return np.random.randn(10, 10)
+
+
+@pytest.fixture
+def random_2d_with_nan():
+    np.random.seed(42)
+    data = np.random.randn(10, 10)
+    data[np.random.randint(0, 10), np.random.randint(0, 10)] = np.nan
+    return data
+
+
+@pytest.fixture
+def random_3d():
+    np.random.seed(42)
+    return np.random.randn(10, 10, 10)
+
+
+@pytest.fixture
+def random_3d_with_nan():
+    np.random.seed(42)
+    data = np.random.randn(10, 10, 10)
+    data[
+        np.random.randint(0, 10),
+        np.random.randint(0, 10),
+        np.random.randint(0, 10),
+    ] = np.nan
+    return data
