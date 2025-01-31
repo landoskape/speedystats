@@ -162,6 +162,10 @@ def generate_numba_function(
     # Join data part indices
     data_index = ", ".join(data_index_parts)
 
+    # If nan method, we can't use fastmath
+    if np_method.startswith("nan"):
+        fastmath = False
+
     # Create the function template
     q_param = ", q" if has_q_param else ""
     template = f'''
@@ -342,13 +346,13 @@ def _fallback_faststats(data: np.ndarray, method: str, axis: Optional[Union[int,
             q_signature = ""
             q_call = ""
         template += f"""
-def {method_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = -1, keepdims: bool = False{q_signature},) -> np.ndarray:
+def {method_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False{q_signature},) -> np.ndarray:
     return _call_faststats(data, "{method_name}", axis, keepdims{q_call})
 """
         if config["methods"][method_name]["has_nan_variant"]:
             nan_name = f"nan{method_name}"
             template += f"""
-def {nan_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = -1, keepdims: bool = False{q_signature},) -> np.ndarray:
+def {nan_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False{q_signature},) -> np.ndarray:
     return _call_faststats(data, "{nan_name}", axis, keepdims{q_call})
 """
 
@@ -452,6 +456,9 @@ def generate_init_file(config):
     template = """\"\"\"Numba-accelerated statistical functions.\"\"\"
 
 """
+    # Add the version number
+    template += f"__version__ = \"{config['meta']['version']}\"\n\n\n"
+
     # Add imports for each method
     for method_name in config["methods"]:
         template += f"from .faststats import {method_name}\n"
@@ -529,7 +536,7 @@ if __name__ == "__main__":
             code = generate_module(
                 np_method=nan_name,
                 max_dims=max_dims,
-                fastmath=config["methods"][method_name]["fastmath"],
+                fastmath=False,
                 parallel=parallel,
                 cache=cache,
                 has_q_param=config["methods"][method_name]["has_q_param"],

@@ -6,6 +6,7 @@ meta:
   max_dimensions: 5 # Maximum number of dimensions to support with numba implementations
   parallel: true # whether to use the parallel=True flag in numba compilation
   cache: true # whether to cache the numba compilation
+  version: 0.0.0 # which version number we're on for pypi releases etc
 
 methods:
   sum:
