@@ -67,7 +67,7 @@ def get_nanpercentile(data: np.ndarray, keep_axes: Tuple[int], q) -> np.ndarray:
     raise ValueError(f"Invalid data shape for nanpercentile, received: {keep_axes}")
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep0(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0,)"""
     output = np.zeros((data.shape[0]))
@@ -76,7 +76,7 @@ def numba_nanpercentile_keep0(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep1(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (1,)"""
     output = np.zeros((data.shape[1]))
@@ -85,7 +85,7 @@ def numba_nanpercentile_keep1(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep2(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (2,)"""
     output = np.zeros((data.shape[2]))
@@ -94,7 +94,7 @@ def numba_nanpercentile_keep2(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep3(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (3,)"""
     output = np.zeros((data.shape[3]))
@@ -103,7 +103,7 @@ def numba_nanpercentile_keep3(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep4(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (4,)"""
     output = np.zeros((data.shape[4]))
@@ -112,7 +112,7 @@ def numba_nanpercentile_keep4(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep01(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 1)"""
     output = np.zeros((data.shape[0], data.shape[1]))
@@ -122,7 +122,7 @@ def numba_nanpercentile_keep01(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep02(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 2)"""
     output = np.zeros((data.shape[0], data.shape[2]))
@@ -132,7 +132,7 @@ def numba_nanpercentile_keep02(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep03(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 3)"""
     output = np.zeros((data.shape[0], data.shape[3]))
@@ -142,7 +142,7 @@ def numba_nanpercentile_keep03(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep04(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 4)"""
     output = np.zeros((data.shape[0], data.shape[4]))
@@ -152,7 +152,7 @@ def numba_nanpercentile_keep04(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep12(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (1, 2)"""
     output = np.zeros((data.shape[1], data.shape[2]))
@@ -162,7 +162,7 @@ def numba_nanpercentile_keep12(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep13(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (1, 3)"""
     output = np.zeros((data.shape[1], data.shape[3]))
@@ -172,7 +172,7 @@ def numba_nanpercentile_keep13(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep14(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (1, 4)"""
     output = np.zeros((data.shape[1], data.shape[4]))
@@ -182,7 +182,7 @@ def numba_nanpercentile_keep14(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep23(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (2, 3)"""
     output = np.zeros((data.shape[2], data.shape[3]))
@@ -192,7 +192,7 @@ def numba_nanpercentile_keep23(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep24(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (2, 4)"""
     output = np.zeros((data.shape[2], data.shape[4]))
@@ -202,7 +202,7 @@ def numba_nanpercentile_keep24(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep34(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (3, 4)"""
     output = np.zeros((data.shape[3], data.shape[4]))
@@ -212,7 +212,7 @@ def numba_nanpercentile_keep34(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep012(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 1, 2)"""
     output = np.zeros((data.shape[0], data.shape[1], data.shape[2]))
@@ -223,7 +223,7 @@ def numba_nanpercentile_keep012(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep013(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 1, 3)"""
     output = np.zeros((data.shape[0], data.shape[1], data.shape[3]))
@@ -234,7 +234,7 @@ def numba_nanpercentile_keep013(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep014(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 1, 4)"""
     output = np.zeros((data.shape[0], data.shape[1], data.shape[4]))
@@ -245,7 +245,7 @@ def numba_nanpercentile_keep014(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep023(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 2, 3)"""
     output = np.zeros((data.shape[0], data.shape[2], data.shape[3]))
@@ -256,7 +256,7 @@ def numba_nanpercentile_keep023(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep024(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 2, 4)"""
     output = np.zeros((data.shape[0], data.shape[2], data.shape[4]))
@@ -267,7 +267,7 @@ def numba_nanpercentile_keep024(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep034(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 3, 4)"""
     output = np.zeros((data.shape[0], data.shape[3], data.shape[4]))
@@ -278,7 +278,7 @@ def numba_nanpercentile_keep034(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep123(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (1, 2, 3)"""
     output = np.zeros((data.shape[1], data.shape[2], data.shape[3]))
@@ -289,7 +289,7 @@ def numba_nanpercentile_keep123(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep124(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (1, 2, 4)"""
     output = np.zeros((data.shape[1], data.shape[2], data.shape[4]))
@@ -300,7 +300,7 @@ def numba_nanpercentile_keep124(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep134(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (1, 3, 4)"""
     output = np.zeros((data.shape[1], data.shape[3], data.shape[4]))
@@ -311,7 +311,7 @@ def numba_nanpercentile_keep134(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep234(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (2, 3, 4)"""
     output = np.zeros((data.shape[2], data.shape[3], data.shape[4]))
@@ -322,7 +322,7 @@ def numba_nanpercentile_keep234(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep0123(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 1, 2, 3)"""
     output = np.zeros((data.shape[0], data.shape[1], data.shape[2], data.shape[3]))
@@ -334,7 +334,7 @@ def numba_nanpercentile_keep0123(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep0124(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 1, 2, 4)"""
     output = np.zeros((data.shape[0], data.shape[1], data.shape[2], data.shape[4]))
@@ -348,7 +348,7 @@ def numba_nanpercentile_keep0124(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep0134(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 1, 3, 4)"""
     output = np.zeros((data.shape[0], data.shape[1], data.shape[3], data.shape[4]))
@@ -362,7 +362,7 @@ def numba_nanpercentile_keep0134(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep0234(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (0, 2, 3, 4)"""
     output = np.zeros((data.shape[0], data.shape[2], data.shape[3], data.shape[4]))
@@ -376,7 +376,7 @@ def numba_nanpercentile_keep0234(data: np.ndarray, q) -> np.ndarray:
     return output
 
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=False, cache=True)
 def numba_nanpercentile_keep1234(data: np.ndarray, q) -> np.ndarray:
     """Numba speedup for nanpercentile reducing all but axes (1, 2, 3, 4)"""
     output = np.zeros((data.shape[1], data.shape[2], data.shape[3], data.shape[4]))

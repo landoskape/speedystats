@@ -1,5 +1,8 @@
 """Numba-accelerated statistical functions."""
 
+__version__ = "0.0.0"
+
+
 from .faststats import sum
 from .faststats import nansum
 from .faststats import ptp

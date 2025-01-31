@@ -67,7 +67,7 @@ def _fallback_faststats(
 
 def sum(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
     return _call_faststats(data, "sum", axis, keepdims)
@@ -75,7 +75,7 @@ def sum(
 
 def nansum(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
     return _call_faststats(data, "nansum", axis, keepdims)
@@ -83,7 +83,7 @@ def nansum(
 
 def ptp(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
     return _call_faststats(data, "ptp", axis, keepdims)
@@ -91,7 +91,7 @@ def ptp(
 
 def percentile(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
     q: Optional[float] = None,
 ) -> np.ndarray:
@@ -100,7 +100,7 @@ def percentile(
 
 def nanpercentile(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
     q: Optional[float] = None,
 ) -> np.ndarray:
@@ -109,7 +109,7 @@ def nanpercentile(
 
 def quantile(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
     q: Optional[float] = None,
 ) -> np.ndarray:
@@ -118,7 +118,7 @@ def quantile(
 
 def nanquantile(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
     q: Optional[float] = None,
 ) -> np.ndarray:
@@ -127,7 +127,7 @@ def nanquantile(
 
 def median(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
     return _call_faststats(data, "median", axis, keepdims)
@@ -135,7 +135,7 @@ def median(
 
 def nanmedian(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
     return _call_faststats(data, "nanmedian", axis, keepdims)
@@ -143,7 +143,7 @@ def nanmedian(
 
 def average(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
     return _call_faststats(data, "average", axis, keepdims)
@@ -151,7 +151,7 @@ def average(
 
 def mean(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
     return _call_faststats(data, "mean", axis, keepdims)
@@ -159,7 +159,7 @@ def mean(
 
 def nanmean(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
     return _call_faststats(data, "nanmean", axis, keepdims)
@@ -167,7 +167,7 @@ def nanmean(
 
 def std(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
     return _call_faststats(data, "std", axis, keepdims)
@@ -175,7 +175,7 @@ def std(
 
 def nanstd(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
     return _call_faststats(data, "nanstd", axis, keepdims)
@@ -183,7 +183,7 @@ def nanstd(
 
 def var(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
     return _call_faststats(data, "var", axis, keepdims)
@@ -191,7 +191,7 @@ def var(
 
 def nanvar(
     data: np.ndarray,
-    axis: Union[int, Iterable[int]] = -1,
+    axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
     return _call_faststats(data, "nanvar", axis, keepdims)
