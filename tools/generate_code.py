@@ -3,10 +3,10 @@ Template for generating Numba functions.
 
 This is a template for generating Numba functions. It is used to generate the
 functions for the mean, std, and other functions that are used in the speedystats
-package. The template produces a function that computes a statistic from the 
-numpy library using numba speedups using (nested) loops. 
+package. The template produces a function that computes a statistic from the
+numpy library using numba speedups using (nested) loops.
 
-An example of the template is shown below, we'll use it to discuss what's 
+An example of the template is shown below, we'll use it to discuss what's
 happening in the template generator function.
 ```python
 @nb.njit(parallel=True, fastmath=True, cache=True)
@@ -21,7 +21,7 @@ def numba_mean_keep01(data):
 
 Each numba function is compiled with nopython, parallel, fastmath, and cache.
 The function name indicates the statistic being computed and the axes that are
-_kept_ (not reduced!). This is important because it works for a numpy array 
+_kept_ (not reduced!). This is important because it works for a numpy array
 with any number of dimensions (as long as it's at least as many as are kept!).
 """
 
