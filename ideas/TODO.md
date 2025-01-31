@@ -1,7 +1,7 @@
-# FastStats Package Improvement Recommendations
+# speedystats Package Improvement Recommendations
 
 ## Current Package Overview
-FastStats is a Python package designed to accelerate NumPy statistical operations using Numba. The package maintains a clean API that mirrors NumPy's interface while providing significant performance improvements through parallel processing.
+speedystats is a Python package designed to accelerate NumPy statistical operations using Numba. The package maintains a clean API that mirrors NumPy's interface while providing significant performance improvements through parallel processing.
 
 ## Current Strengths
 
@@ -150,11 +150,11 @@ from memory_profiler import profile
 def benchmark_operation(func, data, **kwargs):
     """Benchmark a single operation"""
     numpy_time = timeit(lambda: getattr(np, func)(data, **kwargs), number=100)
-    faststats_time = timeit(lambda: getattr(faststats, func)(data, **kwargs), number=100)
+    speedystat_time = timeit(lambda: getattr(speedystats, func)(data, **kwargs), number=100)
     return {
         'numpy_time': numpy_time,
-        'faststats_time': faststats_time,
-        'speedup': numpy_time/faststats_time
+        'speedystat_time': speedystat_time,
+        'speedup': numpy_time/speedystat_time
     }
 
 @profile

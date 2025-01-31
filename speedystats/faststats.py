@@ -1,11 +1,11 @@
 from typing import Union, Iterable, Optional
 import numpy as np
-from .routing import faststats_route, get_max_dims, get_keep_axes
+from .routing import speedystat_route, get_max_dims, get_keep_axes
 
 MAX_DIMS = get_max_dims()
 
 
-def _call_faststats(
+def _call_speedystat(
     data: np.ndarray,
     method: str,
     axis: Optional[Union[int, Iterable[int]]] = None,
@@ -14,7 +14,7 @@ def _call_faststats(
 ) -> np.ndarray:
     # If the axis is None, use the numpy fallback
     if axis is None:
-        return _fallback_faststats(data, method, axis, keepdims, q)
+        return _fallback_speedystat(data, method, axis, keepdims, q)
 
     # Identify the shape of the data and the axes to keep
     data_ndims = data.ndim
@@ -23,11 +23,11 @@ def _call_faststats(
 
     # If no axes are kept, use the numpy fallback
     if not keep_axes:
-        return _fallback_faststats(data, method, axis, keepdims, q)
+        return _fallback_speedystat(data, method, axis, keepdims, q)
 
     # If the number of axes to keep isn't supported, use the numpy fallback
     if any(k >= MAX_DIMS for k in keep_axes):
-        return _fallback_faststats(data, method, axis, keepdims, q)
+        return _fallback_speedystat(data, method, axis, keepdims, q)
 
     # Reshape the data to be flattened along reducing axes
     last_axis = keep_axes[-1]
@@ -36,7 +36,7 @@ def _call_faststats(
         data = np.reshape(data, new_shape)
 
     # Get the numba implementation and check if it has a q parameter
-    func, has_q_param = faststats_route(method)
+    func, has_q_param = speedystat_route(method)
 
     # Call the numba implementation
     if has_q_param:
@@ -51,7 +51,7 @@ def _call_faststats(
     return out
 
 
-def _fallback_faststats(
+def _fallback_speedystat(
     data: np.ndarray,
     method: str,
     axis: Optional[Union[int, Iterable[int]]] = None,
@@ -70,7 +70,7 @@ def sum(
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
-    return _call_faststats(data, "sum", axis, keepdims)
+    return _call_speedystat(data, "sum", axis, keepdims)
 
 
 def nansum(
@@ -78,7 +78,7 @@ def nansum(
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
-    return _call_faststats(data, "nansum", axis, keepdims)
+    return _call_speedystat(data, "nansum", axis, keepdims)
 
 
 def ptp(
@@ -86,7 +86,7 @@ def ptp(
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
-    return _call_faststats(data, "ptp", axis, keepdims)
+    return _call_speedystat(data, "ptp", axis, keepdims)
 
 
 def percentile(
@@ -95,7 +95,7 @@ def percentile(
     keepdims: bool = False,
     q: Optional[float] = None,
 ) -> np.ndarray:
-    return _call_faststats(data, "percentile", axis, keepdims, q)
+    return _call_speedystat(data, "percentile", axis, keepdims, q)
 
 
 def nanpercentile(
@@ -104,7 +104,7 @@ def nanpercentile(
     keepdims: bool = False,
     q: Optional[float] = None,
 ) -> np.ndarray:
-    return _call_faststats(data, "nanpercentile", axis, keepdims, q)
+    return _call_speedystat(data, "nanpercentile", axis, keepdims, q)
 
 
 def quantile(
@@ -113,7 +113,7 @@ def quantile(
     keepdims: bool = False,
     q: Optional[float] = None,
 ) -> np.ndarray:
-    return _call_faststats(data, "quantile", axis, keepdims, q)
+    return _call_speedystat(data, "quantile", axis, keepdims, q)
 
 
 def nanquantile(
@@ -122,7 +122,7 @@ def nanquantile(
     keepdims: bool = False,
     q: Optional[float] = None,
 ) -> np.ndarray:
-    return _call_faststats(data, "nanquantile", axis, keepdims, q)
+    return _call_speedystat(data, "nanquantile", axis, keepdims, q)
 
 
 def median(
@@ -130,7 +130,7 @@ def median(
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
-    return _call_faststats(data, "median", axis, keepdims)
+    return _call_speedystat(data, "median", axis, keepdims)
 
 
 def nanmedian(
@@ -138,7 +138,7 @@ def nanmedian(
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
-    return _call_faststats(data, "nanmedian", axis, keepdims)
+    return _call_speedystat(data, "nanmedian", axis, keepdims)
 
 
 def average(
@@ -146,7 +146,7 @@ def average(
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
-    return _call_faststats(data, "average", axis, keepdims)
+    return _call_speedystat(data, "average", axis, keepdims)
 
 
 def mean(
@@ -154,7 +154,7 @@ def mean(
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
-    return _call_faststats(data, "mean", axis, keepdims)
+    return _call_speedystat(data, "mean", axis, keepdims)
 
 
 def nanmean(
@@ -162,7 +162,7 @@ def nanmean(
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
-    return _call_faststats(data, "nanmean", axis, keepdims)
+    return _call_speedystat(data, "nanmean", axis, keepdims)
 
 
 def std(
@@ -170,7 +170,7 @@ def std(
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
-    return _call_faststats(data, "std", axis, keepdims)
+    return _call_speedystat(data, "std", axis, keepdims)
 
 
 def nanstd(
@@ -178,7 +178,7 @@ def nanstd(
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
-    return _call_faststats(data, "nanstd", axis, keepdims)
+    return _call_speedystat(data, "nanstd", axis, keepdims)
 
 
 def var(
@@ -186,7 +186,7 @@ def var(
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
-    return _call_faststats(data, "var", axis, keepdims)
+    return _call_speedystat(data, "var", axis, keepdims)
 
 
 def nanvar(
@@ -194,4 +194,4 @@ def nanvar(
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
 ) -> np.ndarray:
-    return _call_faststats(data, "nanvar", axis, keepdims)
+    return _call_speedystat(data, "nanvar", axis, keepdims)

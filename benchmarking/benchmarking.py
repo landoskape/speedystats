@@ -1,7 +1,7 @@
 import numpy as np
 import time
 from typing import Tuple, List, Optional, Union
-import faststats
+import speedystats
 from dataclasses import dataclass
 from tabulate import tabulate
 from argparse import ArgumentParser
@@ -18,7 +18,7 @@ class BenchmarkResult:
     array_name: str
     axis: Union[int, Tuple[int, ...], None]
     numpy_time: float
-    faststats_time: float
+    speedystat_time: float
     speedup: float
     array_size_mb: float
 
@@ -49,16 +49,16 @@ def benchmark_operation(
     axis: Optional[Union[int, Tuple[int, ...]]] = None,
     n_repeats: int = 5,
 ) -> Tuple[float, float]:
-    """Benchmark a single operation comparing NumPy vs FastStats"""
+    """Benchmark a single operation comparing NumPy vs speedystats"""
 
     # Get the corresponding functions
     numpy_func = getattr(np, method)
 
-    faststats_func = getattr(faststats, method)
+    speedystat_func = getattr(speedystats, method)
 
     # Warm-up run
     _ = numpy_func(data, axis=axis)
-    _ = faststats_func(data, axis=axis)
+    _ = speedystat_func(data, axis=axis)
 
     # Time NumPy
     numpy_times = []
@@ -67,14 +67,14 @@ def benchmark_operation(
         _ = numpy_func(data, axis=axis)
         numpy_times.append(time.perf_counter() - start)
 
-    # Time FastStats
-    faststats_times = []
+    # Time speedystats
+    speedystat_times = []
     for _ in range(n_repeats):
         start = time.perf_counter()
-        _ = faststats_func(data, axis=axis)
-        faststats_times.append(time.perf_counter() - start)
+        _ = speedystat_func(data, axis=axis)
+        speedystat_times.append(time.perf_counter() - start)
 
-    return np.mean(numpy_times), np.mean(faststats_times)
+    return np.mean(numpy_times), np.mean(speedystat_times)
 
 
 def run_benchmarks(method: str) -> List[BenchmarkResult]:
@@ -109,7 +109,7 @@ def run_benchmarks(method: str) -> List[BenchmarkResult]:
             else:
                 continue
 
-            numpy_time, faststats_time = benchmark_operation(
+            numpy_time, speedystat_time = benchmark_operation(
                 data,
                 method,
                 axis,
@@ -120,8 +120,8 @@ def run_benchmarks(method: str) -> List[BenchmarkResult]:
                     array_name=config.name,
                     axis=axis,
                     numpy_time=numpy_time,
-                    faststats_time=faststats_time,
-                    speedup=numpy_time / faststats_time,
+                    speedystat_time=speedystat_time,
+                    speedup=numpy_time / speedystat_time,
                     array_size_mb=array_size_mb,
                 )
             )
@@ -137,7 +137,7 @@ def display_results(results: List[BenchmarkResult]):
             str(r.axis),
             f"{r.array_size_mb:.1f}",
             f"{r.numpy_time*1000:.2f}",
-            f"{r.faststats_time*1000:.2f}",
+            f"{r.speedystat_time*1000:.2f}",
             f"{r.speedup:.2f}x",
         ]
         for r in results
@@ -148,7 +148,7 @@ def display_results(results: List[BenchmarkResult]):
         "Axis",
         "Size (MB)",
         "NumPy (ms)",
-        "FastStats (ms)",
+        "speedystats (ms)",
         "Speedup-FS",
     ]
     print(tabulate(table_data, headers=headers, tablefmt="grid"))

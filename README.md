@@ -1,14 +1,14 @@
-# FastStats
+# speedystats
 
-FastStats is a Python package designed to accelerate NumPy statistical operations using Numba. The package maintains a clean API that mirrors NumPy's interface while providing significant performance improvements through parallel processing.
+speedystats is a Python package designed to accelerate NumPy statistical operations using Numba. The package maintains a clean API that mirrors NumPy's interface while providing significant performance improvements through parallel processing.
 
 > "How can I use numba to speed up my median computation?" 
 >
-> Yep. Just use faststats.
+> Yep. Just use speedystats.
 
 > "Is it possible to use numba to make np.std go faster? 
 >
-> Yep. Just use faststats.
+> Yep. Just use speedystats.
 
 ## Features
 
@@ -18,13 +18,13 @@ FastStats is a Python package designed to accelerate NumPy statistical operation
 
 ## Installation
 ```bash
-pip install faststats
+pip install speedystats
 ```
 
 ## Quick Start
 ```python
 import numpy as np
-import faststats as fs
+import speedystats as fs
 
 # Create some test data
 data = np.random.randn(1000, 1000)
@@ -50,17 +50,17 @@ nanmean = fs.nanmean(data_with_nans, axis=0)
 
 ## Performance Note
 
-While FastStats is designed for performance, the actual speedup depends on your specific use case, data size, and hardware. The package is most effective with:
+While speedystats is designed for performance, the actual speedup depends on your specific use case, data size, and hardware. The package is most effective with:
 - Large arrays (typically > 100,000 elements)
 - Multi-core processors (for parallel execution)
 - Certain methods are sped up much more than numpy
 - Certain axis / dimension combinations get huge speedups, others are usually comparable to numpy
 
-> **Note:** Benchmarking tools for automatic routing to faststats implementation vs numpy default methods isn't finished --- so you are responsible for determining whether faststats is faster. Here's an example of how to test it quickly: 
+> **Note:** Benchmarking tools for automatic routing to speedystats implementation vs numpy default methods isn't finished --- so you are responsible for determining whether speedystats is faster. Here's an example of how to test it quickly: 
 >```python
 >from time import time
 >import numpy as mp
->import faststats as fs
+>import speedystats as fs
 >
 ># Suppose you want to test if median is faster for arrays of a certain shape and size
 >array = np.random.randn(1000, 10000)
@@ -77,9 +77,9 @@ While FastStats is designed for performance, the actual speedup depends on your 
 >t = time()
 >for _ in range(num_repeats):
 >    _ = fs.median(array, axis=axis)
->faststats_time = time() - t
+>speedystat_time = time() - t
 >
->print("Speedup: ", numpy_time / faststats_time)
+>print("Speedup: ", numpy_time / speedystat_time)
 >```
 
 Comprehensive benchmarking tools are under development.

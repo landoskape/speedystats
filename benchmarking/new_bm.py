@@ -9,7 +9,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 import logging
 from numpyencoder import NumpyEncoder
-import faststats
+import speedystats
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +24,7 @@ class BenchmarkResult:
     elements_kept: int
     reduction_ratio: float
     numpy_time: float
-    faststats_time: float
+    speedystat_time: float
     speedup: float
     method: str
 
@@ -125,10 +125,10 @@ class SmartBenchmarker:
 
             # Run benchmarks
             numpy_times = []
-            faststats_times = []
+            speedystat_times = []
 
             numpy_func = getattr(np, method)
-            faststats_func = getattr(faststats, method)
+            speedystat_func = getattr(speedystats, method)
 
             for _ in range(self.n_repeats):
                 # Time NumPy
@@ -136,10 +136,10 @@ class SmartBenchmarker:
                 _ = numpy_func(data, axis=axes)
                 numpy_times.append(time.perf_counter() - start)
 
-                # Time FastStats
+                # Time speedystats
                 start = time.perf_counter()
-                _ = faststats_func(data, axis=axes)
-                faststats_times.append(time.perf_counter() - start)
+                _ = speedystat_func(data, axis=axes)
+                speedystat_times.append(time.perf_counter() - start)
 
             return BenchmarkResult(
                 shape=shape,
@@ -149,8 +149,8 @@ class SmartBenchmarker:
                 elements_kept=elements_kept,
                 reduction_ratio=reduction_ratio,
                 numpy_time=np.mean(numpy_times),
-                faststats_time=np.mean(faststats_times),
-                speedup=np.mean(numpy_times) / np.mean(faststats_times),
+                speedystat_time=np.mean(speedystat_times),
+                speedup=np.mean(numpy_times) / np.mean(speedystat_times),
                 method=method,
                 array_nbytes=np.prod(shape) * self.bytes_per_element,
             )
@@ -183,10 +183,10 @@ class SmartBenchmarker:
             for axes in axes_combinations:
                 data = np.random.randn(*shape)
 
-                # Warmup faststats function for this dimension / axes combination
+                # Warmup speedystats function for this dimension / axes combination
                 for method in self.methods:
-                    faststats_func = getattr(faststats, method)
-                    _ = faststats_func(warmup_data, axis=axes)
+                    speedystat_func = getattr(speedystats, method)
+                    _ = speedystat_func(warmup_data, axis=axes)
 
                 for method in self.methods:
                     current += 1
@@ -300,7 +300,7 @@ def analyze_results(results_dir: str):
     print("\nRecommendations:")
     fast_cases = results[results["speedup"] > 1.5]
     if len(fast_cases) > 0:
-        print("FastStats is recommended for:")
+        print("speedystats is recommended for:")
         for method in fast_cases["method"].unique():
             method_cases = fast_cases[fast_cases["method"] == method]
             print(f"\n{method}:")

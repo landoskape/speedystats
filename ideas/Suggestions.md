@@ -67,12 +67,12 @@
 
 2. Create Directory Structure:
    ```
-   faststats/
+   speedystats/
    ├── docs/
    ├── examples/
    ├── tests/
    ├── benchmarks/
-   └── src/faststats/
+   └── src/speedystats/
    ```
 
 3. Development Tools:

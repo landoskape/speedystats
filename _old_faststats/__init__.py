@@ -1,4 +1,4 @@
-from .faststats import (
+from .speedystats import (
     sum,
     nansum,
     ptp,

@@ -2,7 +2,7 @@
 # Each method describes properties needed for code generation
 
 meta:
-  output_path: "faststats"
+  output_path: "speedystats"
   max_dimensions: 5 # Maximum number of dimensions to support with numba implementations
   parallel: true # whether to use the parallel=True flag in numba compilation
   cache: true # whether to cache the numba compilation

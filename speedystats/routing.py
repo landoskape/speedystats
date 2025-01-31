@@ -2,7 +2,7 @@ from typing import Callable, Union, Iterable, Tuple
 from . import numba
 
 
-def faststats_route(np_method: str) -> Callable:
+def speedystat_route(np_method: str) -> Callable:
     """Route numpy method names to their fast implementations.
 
     Args:

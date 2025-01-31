@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import joblib
 import time
-import faststats
+import speedystats
 
 
 def generate_shapes(
@@ -55,27 +55,27 @@ def get_axes_combinations(ndim):
 
 
 def run_benchmark(data, axis, method="mean"):
-    """Run benchmark comparing numpy vs faststats"""
+    """Run benchmark comparing numpy vs speedystats"""
     numpy_func = getattr(np, method)
-    faststats_func = getattr(faststats, method)
+    speedystat_func = getattr(speedystats, method)
 
     # Warm-up run with small data array
     ndims = data.ndim
     warmup_data = np.random.randn(*[5] * ndims)
     _ = numpy_func(warmup_data, axis=axis)
-    _ = faststats_func(warmup_data, axis=axis)
+    _ = speedystat_func(warmup_data, axis=axis)
 
     # Time NumPy
     start = time.perf_counter()
     _ = numpy_func(data, axis=axis)
     numpy_time = time.perf_counter() - start
 
-    # Time FastStats
+    # Time speedystats
     start = time.perf_counter()
-    _ = faststats_func(data, axis=axis)
-    faststats_time = time.perf_counter() - start
+    _ = speedystat_func(data, axis=axis)
+    speedystat_time = time.perf_counter() - start
 
-    return numpy_time, faststats_time
+    return numpy_time, speedystat_time
 
 
 def generate_features(shape, axis):
@@ -159,8 +159,8 @@ def create_training_dataset(shapes, method="mean", n_repeats=3):
             # Run multiple times and take mean
             speedups = []
             for _ in range(n_repeats):
-                numpy_time, faststats_time = run_benchmark(arr, axis, method)
-                speedups.append(numpy_time / faststats_time)
+                numpy_time, speedystat_time = run_benchmark(arr, axis, method)
+                speedups.append(numpy_time / speedystat_time)
 
             features["speedup"] = np.mean(speedups)
             data.append(features)
@@ -242,10 +242,10 @@ if __name__ == "__main__":
     predicted_speedup = predict_speedup(
         test_shape, test_axis, model, scaler, feature_cols
     )
-    numpy_speed, faststats_speed = run_benchmark(
+    numpy_speed, speedystat_speed = run_benchmark(
         np.random.randn(*test_shape), test_axis, method="mean"
     )
-    true_speedup = numpy_speed / faststats_speed
+    true_speedup = numpy_speed / speedystat_speed
     print(f"\nExample prediction:")
     print(f"Shape: {test_shape}, Axis: {test_axis}")
     print(f"Predicted speedup: {predicted_speedup:.2f}x")
@@ -262,10 +262,10 @@ if __name__ == "__main__":
     print("\nAdditional test cases:")
     for shape, axis in test_cases:
         speedup = predict_speedup(shape, axis, model, scaler, feature_cols)
-        numpy_speed, faststats_speed = run_benchmark(
+        numpy_speed, speedystat_speed = run_benchmark(
             np.random.randn(*shape), axis, method="mean"
         )
-        true_speedup = numpy_speed / faststats_speed
+        true_speedup = numpy_speed / speedystat_speed
         print(f"Shape: {shape}, Axis: {axis}")
         print(f"Predicted speedup: {speedup:.2f}x")
         print(f"True speedup: {true_speedup:.2f}x\n")

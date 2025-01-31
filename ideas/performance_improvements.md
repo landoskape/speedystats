@@ -1,4 +1,4 @@
-# FastStats Memory Optimization Strategies
+# speedystats Memory Optimization Strategies
 
 ## Current Memory Usage Issue
 
@@ -252,7 +252,7 @@ def monitor_performance(func):
 
 ```python
 import numpy as np
-from faststats import mean
+from speedystats import mean
 
 # Normal usage remains the same
 small_array = np.random.random((1000, 1000))

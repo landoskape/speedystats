@@ -2,7 +2,7 @@
 Template for generating Numba functions.
 
 This is a template for generating Numba functions. It is used to generate the
-functions for the mean, std, and other functions that are used in the faststats
+functions for the mean, std, and other functions that are used in the speedystats
 package. The template produces a function that computes a statistic from the 
 numpy library using numba speedups using (nested) loops. 
 
@@ -265,21 +265,21 @@ import numpy as np\n\n"""
 
 
 @format_with_black
-def generate_faststats_module(config):
+def generate_speedystat_module(config):
     # Imports
     template = """
 from typing import Union, Iterable, Optional
 import numpy as np
-from .routing import faststats_route, get_max_dims, get_keep_axes
+from .routing import speedystat_route, get_max_dims, get_keep_axes
 """
 
     # This global variable is used to determine the maximum number of dimensions
     # supported by the fast implementations
     template += f"""MAX_DIMS = get_max_dims()\n\n"""
 
-    # Define the faststats call function
+    # Define the speedystats call function
     template += f"""
-def _call_faststats(
+def _call_speedystat(
     data: np.ndarray,
     method: str,
     axis: Optional[Union[int, Iterable[int]]] = None,
@@ -288,7 +288,7 @@ def _call_faststats(
 ) -> np.ndarray:
     # If the axis is None, use the numpy fallback
     if axis is None:
-        return _fallback_faststats(data, method, axis, keepdims, q)
+        return _fallback_speedystat(data, method, axis, keepdims, q)
 
     # Identify the shape of the data and the axes to keep
     data_ndims = data.ndim
@@ -297,11 +297,11 @@ def _call_faststats(
 
     # If no axes are kept, use the numpy fallback
     if not keep_axes:
-        return _fallback_faststats(data, method, axis, keepdims, q)
+        return _fallback_speedystat(data, method, axis, keepdims, q)
 
     # If the number of axes to keep isn't supported, use the numpy fallback
     if any(k >= MAX_DIMS for k in keep_axes):
-        return _fallback_faststats(data, method, axis, keepdims, q)
+        return _fallback_speedystat(data, method, axis, keepdims, q)
 
     # Reshape the data to be flattened along reducing axes
     last_axis = keep_axes[-1]
@@ -310,7 +310,7 @@ def _call_faststats(
         data = np.reshape(data, new_shape)
 
     # Get the numba implementation and check if it has a q parameter
-    func, has_q_param = faststats_route(method)
+    func, has_q_param = speedystat_route(method)
 
     # Call the numba implementation
     if has_q_param:
@@ -325,10 +325,10 @@ def _call_faststats(
     return out
 """
 
-    # Add a numpy fallback when the faststats implementation isn't available
+    # Add a numpy fallback when the speedystats implementation isn't available
     # or won't be faster
     template += f"""
-def _fallback_faststats(data: np.ndarray, method: str, axis: Optional[Union[int, Iterable[int]]] = None, keepdims: bool = False, q: Optional[float] = None) -> np.ndarray:
+def _fallback_speedystat(data: np.ndarray, method: str, axis: Optional[Union[int, Iterable[int]]] = None, keepdims: bool = False, q: Optional[float] = None) -> np.ndarray:
     np_method = getattr(np, method)
     if q is not None:
         return np_method(data, axis=axis, keepdims=keepdims, q=q)
@@ -337,7 +337,7 @@ def _fallback_faststats(data: np.ndarray, method: str, axis: Optional[Union[int,
 """
 
     # Then, for every method in the config, add a function so the user can just call
-    # that directly -- and it will use _call_faststats internally for dispatching
+    # that directly -- and it will use _call_speedystat internally for dispatching
     for method_name in config["methods"]:
         if config["methods"][method_name]["has_q_param"]:
             q_signature = ", q: Optional[float] = None"
@@ -347,13 +347,13 @@ def _fallback_faststats(data: np.ndarray, method: str, axis: Optional[Union[int,
             q_call = ""
         template += f"""
 def {method_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False{q_signature},) -> np.ndarray:
-    return _call_faststats(data, "{method_name}", axis, keepdims{q_call})
+    return _call_speedystat(data, "{method_name}", axis, keepdims{q_call})
 """
         if config["methods"][method_name]["has_nan_variant"]:
             nan_name = f"nan{method_name}"
             template += f"""
 def {nan_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False{q_signature},) -> np.ndarray:
-    return _call_faststats(data, "{nan_name}", axis, keepdims{q_call})
+    return _call_speedystat(data, "{nan_name}", axis, keepdims{q_call})
 """
 
     return template
@@ -366,8 +366,8 @@ def generate_routing_module(config):
 from . import numba\n\n
 """
 
-    # Add faststats_route function
-    template += """def faststats_route(np_method: str) -> Callable:
+    # Add speedystat_route function
+    template += """def speedystat_route(np_method: str) -> Callable:
     \"\"\"Route numpy method names to their fast implementations.
     
     Args:
@@ -452,7 +452,7 @@ def generate_numba_init_file(config):
 
 @format_with_black
 def generate_init_file(config):
-    """Generate the __init__.py file that imports all faststats methods."""
+    """Generate the __init__.py file that imports all speedystats methods."""
     template = """\"\"\"Numba-accelerated statistical functions.\"\"\"
 
 """
@@ -461,10 +461,10 @@ def generate_init_file(config):
 
     # Add imports for each method
     for method_name in config["methods"]:
-        template += f"from .faststats import {method_name}\n"
+        template += f"from .speedystats import {method_name}\n"
         if config["methods"][method_name]["has_nan_variant"]:
             nan_name = f"nan{method_name}"
-            template += f"from .faststats import {nan_name}\n"
+            template += f"from .speedystats import {nan_name}\n"
 
     return template
 
@@ -484,12 +484,12 @@ if __name__ == "__main__":
     numba_init_path = os.path.join(numba_path, "__init__.py")
     init_path = config["meta"]["output_path"] + "/__init__.py"
     route_path = config["meta"]["output_path"] + "/routing.py"
-    faststats_path = config["meta"]["output_path"] + "/faststats.py"
+    speedystat_path = config["meta"]["output_path"] + "/speedystats.py"
 
     # Ensure output directory exists
     os.makedirs(numba_path, exist_ok=True)
 
-    # Generate the __init__.py file for the faststats module
+    # Generate the __init__.py file for the speedystats module
     init_code = generate_init_file(config)
     with open(init_path, "w") as f:
         f.write(init_code)
@@ -507,11 +507,11 @@ if __name__ == "__main__":
         f.write(routing_code)
     print(f"Generated {route_path}")
 
-    # Generate and write the faststats module
-    faststats_code = generate_faststats_module(config)
-    with open(faststats_path, "w") as f:
-        f.write(faststats_code)
-    print(f"Generated {faststats_path}")
+    # Generate and write the speedystats module
+    speedystat_code = generate_speedystat_module(config)
+    with open(speedystat_path, "w") as f:
+        f.write(speedystat_code)
+    print(f"Generated {speedystat_path}")
 
     # Generate code for each method
     for method_name in config["methods"]:
