@@ -77,14 +77,10 @@ def benchmark_operation(
     return np.mean(numpy_times), np.mean(faststats_times)
 
 
-def run_benchmarks(
-    method: str, configs: List[ArrayConfig] = None
-) -> List[BenchmarkResult]:
+def run_benchmarks(method: str) -> List[BenchmarkResult]:
     """Run comprehensive benchmarks for a given statistical method"""
 
-    if configs is None:
-        configs = get_array_configs()
-
+    configs = get_array_configs()
     axes_to_test = [0, 1, 2, (0, 1), (0, 2), (1, 2)]
 
     results = []
@@ -108,7 +104,7 @@ def run_benchmarks(
                     a >= len(config.shape) for a in axis
                 ):
                     continue
-                if isinstance(axis, tuple) and len(axis) > len(config.shape):
+                if isinstance(axis, tuple) and len(axis) >= len(config.shape):
                     continue
             else:
                 continue
