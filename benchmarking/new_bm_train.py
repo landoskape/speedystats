@@ -79,34 +79,64 @@ def run_benchmark(data, axis, method="mean"):
 
 
 def generate_features(shape, axis):
-    """Generate features for shape/axis combination"""
+    """Generate features for shape/axis combination that account for ordering effects"""
+    if not isinstance(axis, tuple):
+        axis = (axis,)
+
     features = {
         "ndim": len(shape),
         "total_size": np.prod(shape),
-        "max_dim": max(shape),
-        "min_dim": min(shape),
-        "mean_dim": np.mean(shape),
-        "std_dim": np.std(shape),
-        "num_axes_reduced": len(axis) if isinstance(axis, tuple) else 1,
-        "max_reduced_dim": (
-            max(shape[i] for i in axis) if isinstance(axis, tuple) else shape[axis]
-        ),
-        "min_reduced_dim": (
-            min(shape[i] for i in axis) if isinstance(axis, tuple) else shape[axis]
-        ),
-        "reduced_size": (
-            np.prod([shape[i] for i in axis])
-            if isinstance(axis, tuple)
-            else shape[axis]
-        ),
-        "kept_size": np.prod([shape[i] for i in range(len(shape)) if i not in axis]),
         "shape_str": str(shape),  # Keep original shape for reference
         "axis_str": str(axis),  # Keep original axis for reference
     }
 
-    # Add log-transformed features
-    for key in ["total_size", "max_dim", "min_dim", "reduced_size", "kept_size"]:
-        features[f"log_{key}"] = np.log10(features[key])
+    # Add dimension-specific features
+    for i, dim in enumerate(shape):
+        features[f"dim_{i}"] = dim
+        features[f"log_dim_{i}"] = np.log10(dim)
+        features[f"is_reduced_{i}"] = int(i in axis)
+
+        # Stride information (critical for memory access patterns)
+        stride = np.prod(shape[i + 1 :]) if i < len(shape) - 1 else 1
+        features[f"stride_{i}"] = stride
+        features[f"log_stride_{i}"] = np.log10(stride)
+
+        # Position-sensitive reduction features
+        if i in axis:
+            features[f"reduced_dim_pos_{i}"] = dim
+            features[f"log_reduced_dim_pos_{i}"] = np.log10(dim)
+        else:
+            features[f"kept_dim_pos_{i}"] = dim
+            features[f"log_kept_dim_pos_{i}"] = np.log10(dim)
+
+    # Memory access pattern features
+    features["contiguous_reduction"] = int(max(axis) == len(shape) - 1)
+    features["stride1_reduction"] = int(min(axis) == len(shape) - 1)
+    features["reduced_dims_adjacent"] = int(
+        all(j - i == 1 for i, j in zip(sorted(axis)[:-1], sorted(axis)[1:]))
+    )
+
+    # Size features with positional context
+    features["reduced_size"] = np.prod([shape[i] for i in axis])
+    features["kept_size"] = np.prod(
+        [shape[i] for i in range(len(shape)) if i not in axis]
+    )
+    features["log_reduced_size"] = np.log10(features["reduced_size"])
+    features["log_kept_size"] = np.log10(features["kept_size"])
+
+    # Ratio features
+    features["max_stride_ratio"] = max(shape) / min(shape)
+    features["log_max_stride_ratio"] = np.log10(features["max_stride_ratio"])
+
+    # Cache line optimization features
+    CACHE_LINE_SIZE = 64  # bytes
+    FLOAT_SIZE = 4  # bytes
+    elements_per_cache_line = CACHE_LINE_SIZE // FLOAT_SIZE
+
+    # Feature for whether the innermost dimension fits well in cache lines
+    innermost_dim = shape[-1]
+    features["cache_line_alignment"] = innermost_dim % elements_per_cache_line
+    features["innermost_dim_cache_lines"] = innermost_dim // elements_per_cache_line
 
     return features
 
@@ -153,6 +183,11 @@ def train_model(df, test_size=0.2):
         "log_kept_size",
     ]
 
+    # Print an example of each feature for the first element of df
+
+    for col in df.columns:
+        print(col)
+
     X = df[feature_cols]
     y = df["speedup"]
 
@@ -193,7 +228,7 @@ def predict_speedup(shape, axis, model, scaler, feature_cols):
 
 if __name__ == "__main__":
     # Generate shapes
-    shapes = generate_shapes(max_dims=3, shape_power_range=(0, 3))
+    shapes = generate_shapes(max_dims=2, shape_power_range=(0, 3))
 
     # Create dataset
     df = create_training_dataset(shapes, method="mean", n_repeats=3)
