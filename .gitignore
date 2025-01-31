@@ -1,5 +1,6 @@
 # Ignore for local development
 local/
+_old_faststats/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
