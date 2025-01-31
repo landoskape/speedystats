@@ -69,6 +69,12 @@ While speedystats is designed for performance, the actual speedup depends on you
 ># Set repeats to get a better estimate
 >num_repeats = 20
 >
+># numba functions always have to be compiled, which takes a moment,
+># but speedystats caches them so you only have to wait once (it's just a second or so)
+># so it's good to use a "warmup":
+># you'll need to warmup each combination of number dimensions (2 here) and axis
+>_ = fs.median(np.zeros((10, 10)), axis=axis)
+>
 >t = time()
 >for _ in range(num_repeats):
 >    _ = np.median(array, axis=axis)
@@ -81,8 +87,8 @@ While speedystats is designed for performance, the actual speedup depends on you
 >
 >print("Speedup: ", numpy_time / speedystat_time)
 >```
-
-Comprehensive benchmarking tools are under development.
+>
+> Comprehensive benchmarking tools are under development. When they're released, this will be automated. 
 
 ## Development Status
 
