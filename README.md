@@ -2,7 +2,7 @@
 
 speedystats is a Python package designed to accelerate NumPy statistical operations using Numba. The package maintains a clean API that mirrors NumPy's interface while providing significant performance improvements through parallel processing.
 
-> "How can I use numba to speed up my median computation?" 
+> "Is it possible to use numba to speed up my median computation?"
 >
 > Yep. Just use speedystats.
 
