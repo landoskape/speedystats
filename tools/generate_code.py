@@ -173,7 +173,7 @@ def generate_numba_function(
 def {func_name}(data: np.ndarray{q_param}) -> np.ndarray:
     """Numba speedup for {np_method} reducing all but axes {keep_axes}"""
     output = np.zeros(({output_shape}))
-{loops}{indent}output[{out_index}] = np.{np_method}(data[{data_index}{q_param}])
+{loops}{indent}output[{out_index}] = np.{np_method}(data[{data_index}]{q_param})
     return output
 '''
 
