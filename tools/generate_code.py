@@ -346,13 +346,13 @@ def _fallback_speedystat(data: np.ndarray, method: str, axis: Optional[Union[int
             q_signature = ""
             q_call = ""
         template += f"""
-def {method_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False{q_signature},) -> np.ndarray:
+def {method_name}(data: np.ndarray{q_signature}, axis: Union[int, Iterable[int]] = None, keepdims: bool = False) -> np.ndarray:
     return _call_speedystat(data, "{method_name}", axis, keepdims{q_call})
 """
         if config["methods"][method_name]["has_nan_variant"]:
             nan_name = f"nan{method_name}"
             template += f"""
-def {nan_name}(data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False{q_signature},) -> np.ndarray:
+def {nan_name}(data: np.ndarray{q_signature}, axis: Union[int, Iterable[int]] = None, keepdims: bool = False) -> np.ndarray:
     return _call_speedystat(data, "{nan_name}", axis, keepdims{q_call})
 """
 

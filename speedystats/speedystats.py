@@ -66,132 +66,108 @@ def _fallback_speedystat(
 
 
 def sum(
-    data: np.ndarray,
-    axis: Union[int, Iterable[int]] = None,
-    keepdims: bool = False,
+    data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False
 ) -> np.ndarray:
     return _call_speedystat(data, "sum", axis, keepdims)
 
 
 def nansum(
-    data: np.ndarray,
-    axis: Union[int, Iterable[int]] = None,
-    keepdims: bool = False,
+    data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False
 ) -> np.ndarray:
     return _call_speedystat(data, "nansum", axis, keepdims)
 
 
 def ptp(
-    data: np.ndarray,
-    axis: Union[int, Iterable[int]] = None,
-    keepdims: bool = False,
+    data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False
 ) -> np.ndarray:
     return _call_speedystat(data, "ptp", axis, keepdims)
 
 
 def percentile(
     data: np.ndarray,
+    q: Optional[float] = None,
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
-    q: Optional[float] = None,
 ) -> np.ndarray:
     return _call_speedystat(data, "percentile", axis, keepdims, q)
 
 
 def nanpercentile(
     data: np.ndarray,
+    q: Optional[float] = None,
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
-    q: Optional[float] = None,
 ) -> np.ndarray:
     return _call_speedystat(data, "nanpercentile", axis, keepdims, q)
 
 
 def quantile(
     data: np.ndarray,
+    q: Optional[float] = None,
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
-    q: Optional[float] = None,
 ) -> np.ndarray:
     return _call_speedystat(data, "quantile", axis, keepdims, q)
 
 
 def nanquantile(
     data: np.ndarray,
+    q: Optional[float] = None,
     axis: Union[int, Iterable[int]] = None,
     keepdims: bool = False,
-    q: Optional[float] = None,
 ) -> np.ndarray:
     return _call_speedystat(data, "nanquantile", axis, keepdims, q)
 
 
 def median(
-    data: np.ndarray,
-    axis: Union[int, Iterable[int]] = None,
-    keepdims: bool = False,
+    data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False
 ) -> np.ndarray:
     return _call_speedystat(data, "median", axis, keepdims)
 
 
 def nanmedian(
-    data: np.ndarray,
-    axis: Union[int, Iterable[int]] = None,
-    keepdims: bool = False,
+    data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False
 ) -> np.ndarray:
     return _call_speedystat(data, "nanmedian", axis, keepdims)
 
 
 def average(
-    data: np.ndarray,
-    axis: Union[int, Iterable[int]] = None,
-    keepdims: bool = False,
+    data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False
 ) -> np.ndarray:
     return _call_speedystat(data, "average", axis, keepdims)
 
 
 def mean(
-    data: np.ndarray,
-    axis: Union[int, Iterable[int]] = None,
-    keepdims: bool = False,
+    data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False
 ) -> np.ndarray:
     return _call_speedystat(data, "mean", axis, keepdims)
 
 
 def nanmean(
-    data: np.ndarray,
-    axis: Union[int, Iterable[int]] = None,
-    keepdims: bool = False,
+    data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False
 ) -> np.ndarray:
     return _call_speedystat(data, "nanmean", axis, keepdims)
 
 
 def std(
-    data: np.ndarray,
-    axis: Union[int, Iterable[int]] = None,
-    keepdims: bool = False,
+    data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False
 ) -> np.ndarray:
     return _call_speedystat(data, "std", axis, keepdims)
 
 
 def nanstd(
-    data: np.ndarray,
-    axis: Union[int, Iterable[int]] = None,
-    keepdims: bool = False,
+    data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False
 ) -> np.ndarray:
     return _call_speedystat(data, "nanstd", axis, keepdims)
 
 
 def var(
-    data: np.ndarray,
-    axis: Union[int, Iterable[int]] = None,
-    keepdims: bool = False,
+    data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False
 ) -> np.ndarray:
     return _call_speedystat(data, "var", axis, keepdims)
 
 
 def nanvar(
-    data: np.ndarray,
-    axis: Union[int, Iterable[int]] = None,
-    keepdims: bool = False,
+    data: np.ndarray, axis: Union[int, Iterable[int]] = None, keepdims: bool = False
 ) -> np.ndarray:
     return _call_speedystat(data, "nanvar", axis, keepdims)

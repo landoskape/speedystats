@@ -1,6 +1,6 @@
 """Numba-accelerated statistical functions."""
 
-__version__ = "0.0.0"
+__version__ = "0.0.2"
 
 
 from .speedystats import sum
