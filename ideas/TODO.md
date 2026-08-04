@@ -69,7 +69,7 @@ def get_num_threads():
 
 #### Additional Statistical Methods
 ```python
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=True)
 def numba_skew(data):
     """Calculate skewness using Numba"""
     output = np.zeros(data.shape[0])
@@ -77,7 +77,7 @@ def numba_skew(data):
         # Implementation here
     return output
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=True)
 def numba_kurtosis(data):
     """Calculate kurtosis using Numba"""
     output = np.zeros(data.shape[0])
@@ -85,7 +85,7 @@ def numba_kurtosis(data):
         # Implementation here
     return output
 
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=True)
 def numba_weighted_average(data, weights):
     """Calculate weighted average using Numba"""
     output = np.zeros(data.shape[0])
@@ -98,7 +98,7 @@ def numba_weighted_average(data, weights):
 
 #### Better handling of edge cases in zscore
 ```python
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=True)
 def numba_zscore(data):
     """Improved zscore with zero std handling"""
     output = np.zeros(data.shape)

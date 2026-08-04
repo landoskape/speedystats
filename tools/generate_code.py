@@ -9,7 +9,7 @@ numpy library using numba speedups using (nested) loops.
 An example of the template is shown below, we'll use it to discuss what's
 happening in the template generator function.
 ```python
-@nb.njit(parallel=True, fastmath=True, cache=True)
+@nb.njit(parallel=True, fastmath=True)
 def numba_mean_keep01(data):
     '''Numba speedup for mean reducing all but axes (0, 1)'''
     output = np.zeros((data.shape[0], date.shape[1]))
